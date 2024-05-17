@@ -14,6 +14,7 @@ import operator
 from functools import reduce
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
 
 class MultipleFieldLookupMixin(object):
     def get_object(self):
@@ -159,7 +160,7 @@ class ProfessorCourseAPIView(APIView):
 def deleteCourse(request, name, id):
     cousre = Course.objects.get(id=id)
     cousre.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

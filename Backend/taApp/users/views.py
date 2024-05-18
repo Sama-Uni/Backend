@@ -59,6 +59,7 @@ class LoginView(APIView):
                 professor = ProfessorProfile.objects.get(user=user)
             if student != None:
                 user_data = {
+                    'studentid':student.id,
                     'id': user.id,
                     'role': "student",
                     'username': user.username,

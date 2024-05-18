@@ -107,7 +107,7 @@ class RequestView(APIView):
 
         if role == 'professor':
             try:
-                ret_data = Requests.objects.filter(course__professor__=id)
+                ret_data = Requests.objects.filter(course__professor=id)
             except:
                 return Response(data="professor not found", status=status.HTTP_404_NOT_FOUND)
 

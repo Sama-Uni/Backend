@@ -109,7 +109,7 @@ class RequestView(APIView):
             try:
                 ret_data = Requests.objects.filter(course__professor__=id)
             except:
-                return Response(data="student not found", status=status.HTTP_404_NOT_FOUND)
+                return Response(data="professor not found", status=status.HTTP_404_NOT_FOUND)
 
         serializer = RequestsSerializer(ret_data, many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)

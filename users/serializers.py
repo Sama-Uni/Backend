@@ -116,7 +116,7 @@ class RequestsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Requests
-        fields = ['course', 'student', 'enter_year', 'field_of_study', 'point', 'gpa', 'status', 'studentFirstName', 'studentLastName', 'studentNo', 'courseName', 'courseDescription', 'courseMinpoint', 'courseTerm', 'professorFirstName', 'professorLastName']
+        fields = ['id','course', 'student', 'enter_year', 'field_of_study', 'point', 'gpa', 'status', 'studentFirstName', 'studentLastName', 'studentNo', 'courseName', 'courseDescription', 'courseMinpoint', 'courseTerm', 'professorFirstName', 'professorLastName']
 
 
     def get_studentFirstName(self, obj):

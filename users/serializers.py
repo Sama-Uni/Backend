@@ -104,8 +104,45 @@ class ProfessorProfileSerializer(serializers.ModelSerializer):
 
 
 class RequestsSerializer(serializers.ModelSerializer):
+    studentFirstName = serializers.SerializerMethodField()
+    studentLastName = serializers.SerializerMethodField()
+    studentNo = serializers.SerializerMethodField()
+    courseName = serializers.SerializerMethodField()
+    courseDescription = serializers.SerializerMethodField()
+    courseMinpoint = serializers.SerializerMethodField()
+    courseTerm = serializers.SerializerMethodField()
+    professorFirstName = serializers.SerializerMethodField()
+    professorLastName = serializers.SerializerMethodField()
 
     class Meta:
         model  = Requests
-        fields = '__all__'
+        fields = ['course', 'student', 'enter_year', 'field_of_study', 'point', 'gpa', 'status', 'studentFirstName', 'studentLastName', 'studentNo', 'courseName', 'courseDescription', 'courseMinpoint', 'courseTerm', 'professorFirstName', 'professorLastName']
+
+
+    def get_studentFirstName(self, obj):
+        return obj.student.user.first_name
+
+    def get_studentLastName(self, obj):
+        return obj.student.user.last_name
+
+    def get_studentNo(self, obj):
+        return obj.student.stu_no
+
+    def get_courseName(self, obj):
+        return obj.course.name
+
+    def get_courseDescription(self, obj):
+        return obj.course.description
+
+    def get_courseMinpoint(self, obj):
+        return obj.course.minPoint
+
+    def get_courseTerm(self, obj):
+        return obj.course.term
+
+    def get_professorFirstName(self, obj):
+        return obj.course.professor.user.first_name
+
+    def get_professorLastName(self, obj):
+        return obj.course.professor.user.last_name
 

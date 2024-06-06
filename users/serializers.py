@@ -80,7 +80,7 @@ class CourseForHomeStudentSerializer(serializers.ModelSerializer):
         fields = ('id', 'term', 'required_TAs', 'minPoint', 'passCourse', 'description', 'professor', 'professorName', 'name')
 
     def get_professorName(self, obj):
-        return obj.professor.user.username
+        return obj.professor.user.first_name + obj.professor.user.last_name
 
 
 class CourseSerializer(serializers.ModelSerializer):

@@ -65,9 +65,6 @@ class LoginView(GenericAPIView):
                 student = None
                 professor = ProfessorProfile.objects.get(user=user)
             if student != None:
-                profile_picture_url = None
-                if student.profile_picture:
-                    profile_picture_url = student.profile_picture.url
                 user_data = {
                     'id': user.id,
                     'role': "student",
@@ -79,7 +76,6 @@ class LoginView(GenericAPIView):
                     'stu_no': student.stu_no,
                     'is_ta': student.is_ta,
                     'email': user.email,
-                    'profile_picture': profile_picture_url,
                     'university': student.university,
                     'college': student.college,
                     'about_me': student.about_me,
@@ -90,9 +86,6 @@ class LoginView(GenericAPIView):
                 }
                 return Response({"token": token.key, "user_data": user_data}, status=status.HTTP_200_OK)
             else:
-                profile_picture_url = None
-                if professor.profile_picture:
-                    profile_picture_url = professor.profile_picture
                 user_data = {
                 'professorid':professor.id,
                 'id': user.id,
@@ -105,7 +98,6 @@ class LoginView(GenericAPIView):
                 'university': professor.university,
                 'college': professor.college,
                 'about_me': professor.about_me,
-                'profile_picture': profile_picture_url,
                 }
                 return Response({"token": token.key, "user_data": user_data}, status=status.HTTP_200_OK)
 
@@ -390,3 +382,4 @@ class FileUploadView(GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

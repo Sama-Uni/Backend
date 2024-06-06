@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 from .models import Course
 from rest_framework.test import APITestCase
-
+from django.core.files.uploadedfile import SimpleUploadedFile
 # class ProfessorRegistrationTest(TestCase):
 #     def setUp(self):
 #         self.factory = APIRequestFactory()
@@ -241,3 +241,80 @@ from rest_framework.test import APITestCase
 #         self.assertEqual(response.status_code, status.HTTP_200_OK)
 #         self.assertEqual(response.data['user']['email'], 'newemail@example.com')
 #         self.assertEqual(response.data['professor_profile']['national_no'], '9876543210')
+import json
+from django.test import TestCase
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+from django.urls import reverse
+from rest_framework.test import APIClient
+from.models import ProfessorFiles, StudentProfile, ProfessorProfile
+
+class FileUploadViewTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        # Create users
+        self.student_user = User.objects.create_user(username='teststudent', password='testpassword')
+        self.professor_user = User.objects.create_user(username='testprofessor', password='testpassword')
+
+        # Create profiles
+        self.student_profile = StudentProfile.objects.create(user=self.student_user)
+        self.professor_profile = ProfessorProfile.objects.create(user=self.professor_user)
+
+        # Set up file path
+        self.file_path = 'C:\\Users\\User\\Desktop\\micro\\How to interfac.pdf'  # Ensure this path is accessible
+
+        # Authenticate the client with the student user
+        self.client.force_authenticate(user=self.student_user)
+        self.token = Token.objects.create(user=self.student_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+
+    def assert_response_status_and_print_error(self, response, expected_status_code):
+        print(f"\n*************MESSAGE:*******************\nResponse Error: {json.dumps(response.data)}\n")
+        self.assertEqual(response.status_code, expected_status_code)
+        # if response.status_code!= 200:
+        #     print(f"\n*************ERROR MESSAGE:*******************\nResponse Error: {json.dumps(response.data)}\n")
+        #     pass
+
+    def test_create_new_file_upload(self):
+        file = SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+        professor_id = self.professor_profile.id
+        student_id = self.student_profile.id
+        response = self.client.post(reverse('file-upload', kwargs={'professor_id': professor_id}), {
+            'uploaded_by_student': self.student_profile.id,
+            # 'professor_profile': self.professor_profile.id,
+            'file': file
+        })
+        self.assert_response_status_and_print_error(response, 200)
+        self.assertTrue(ProfessorFiles.objects.filter(uploaded_by_student=self.student_profile).exists())
+
+    def test_update_existing_file_upload(self):
+        file = SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+        professor_files = ProfessorFiles.objects.create(uploaded_by_student=self.student_profile, professor_profile=self.professor_profile, file=self.file_path)
+        professor_id = self.professor_profile.id
+        response = self.client.post(reverse('file-upload', kwargs={'professor_id': professor_id}), {
+            'uploaded_by_student': self.student_profile.id,
+            # 'professor_profile': self.professor_profile.id,
+            'file': file,
+            # 'HTTP_X_REQUEST_ID': str(professor_files.id)
+        }, HTTP_AUTHORIZATION=f"Token {self.token}")
+        self.assert_response_status_and_print_error(response, 200)
+        self.assertEqual(ProfessorFiles.objects.get(id=professor_files.id).file, file)
+
+    def test_invalid_request(self):
+        """Test handling invalid requests."""
+        professor_id = self.professor_profile.id  # Make sure to get the professor_id
+        response = self.client.post(reverse('file-upload', kwargs={'professor_id': professor_id}), {
+            'uploaded_by_student': 'dfs',
+            'file':25,
+            })
+        self.assert_response_status_and_print_error(response, 400)
+        self.assertIn("file", response.data)
+
+    # def test_unauthorized_access(self):
+    #     """Test unauthorized access."""
+    #     response = self.client.post(reverse('file-upload', kwargs={'professor_id': self.professor_profile.id}))
+    #     self.assert_response_status_and_print_error(response, 403)
+
+
+

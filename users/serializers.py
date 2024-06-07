@@ -3,11 +3,18 @@ from rest_framework import serializers
 from users.models import ProfessorProfile, StudentProfile, Course, Requests, ProfessorFiles
 from django.contrib.auth import authenticate
 from rest_framework import generics
+from django.core.validators import FileExtensionValidator
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'password']
+    
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        # Remove the password field from the serialized output
+        del rep['password']
+        return rep
     
 
 class ProfessorRegisterSerializer(serializers.ModelSerializer):
@@ -80,7 +87,7 @@ class CourseForHomeStudentSerializer(serializers.ModelSerializer):
         fields = ('id', 'term', 'required_TAs', 'minPoint', 'passCourse', 'description', 'professor', 'professorName', 'name')
 
     def get_professorName(self, obj):
-        return obj.professor.user.first_name + obj.professor.user.last_name
+        return obj.professor.user.first_name + " " + obj.professor.user.last_name
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -157,16 +164,20 @@ class RateSerializer(serializers.Serializer):
     rate = serializers.IntegerField(min_value=0, max_value=5) 
 
 class FileUploadSerializer(serializers.ModelSerializer):
+
+    file = serializers.FileField(allow_null=False, validators=[FileExtensionValidator(['pdf'])])
+
     class Meta:
         model = ProfessorFiles
-        fields = ['id', 'uploaded_by_student', 'file']
+        fields = ['id', 'professor_profile', 'uploaded_by_student','file']
 
     def create(self, validated_data):
-        # Create a new instance
         return ProfessorFiles.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         # Update the existing instance
         instance.file = validated_data.get('file', instance.file)
         instance.save()
+        
+        # Return both the instance and the file URL
         return instance
